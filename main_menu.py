@@ -36,7 +36,4 @@ def draw_main_menu():
 
     screen.blit(Six8_text, Six8_rect)
 
-    # Similarly for other buttons...
-    # You can further refactor the button rendering process to avoid repetitive code
-
     return btn_k2, btn_35, btn_68

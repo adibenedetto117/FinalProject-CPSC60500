@@ -130,13 +130,14 @@ GRAY = (200, 200, 200)
 BROWN = (139, 69, 19)
 
 #Other constants
-MAX_BOXES = 100
+MAX_BOXES = 1000
 BOX_WIDTH = 10
 BOX_HEIGHT = 10
 ROBOT_WIDTH = 20
 ROBOT_HEIGHT = 20
 SPACING = 5  # space between boxes
 robot_position = [SCREEN_WIDTH // 2 - BOX_WIDTH // 2, SCREEN_HEIGHT - BOX_HEIGHT * 2]
+drawn_boxes_positions = []
 
 all_sprites = pygame.sprite.Group()
 box_group = pygame.sprite.Group()
@@ -203,11 +204,13 @@ def move_robot_to(target_position, frames):
     robot_position = target_position
     yield robot_position
 
+
 def draw_function_curve_and_boxes(function_selected, current_number):
     # Define some constants for the graph, like space between points, size of boxes, etc.
     BOX_SIZE = 10
-    SPACE_BETWEEN_POINTS = 5  # Adjust as per your graph size and screen width
-    robot_pos = [0, SCREEN_HEIGHT - current_number]  # Starting position of the robot
+    SPACE_BETWEEN_POINTS = 1  # Adjust as per your graph size and screen width
+    GRAPH_OFFSET_X = 30  # These offset the start of the graph so the boxes don't spawn on the edge of the window
+    GRAPH_OFFSET_Y = -30
 
     # Calculate curve points and store in a list
     curve_points = []
@@ -220,21 +223,34 @@ def draw_function_curve_and_boxes(function_selected, current_number):
 
     for point in curve_points:
         x, y = point
-        screen_x = x * SPACE_BETWEEN_POINTS  # Convert function input to screen x-coordinate
-        screen_y = SCREEN_HEIGHT - y * SPACE_BETWEEN_POINTS  # Convert function output to screen y-coordinate
+        screen_x = GRAPH_OFFSET_X + x * SPACE_BETWEEN_POINTS  # Convert function input to screen x-coordinate
+        screen_y = SCREEN_HEIGHT - y * SPACE_BETWEEN_POINTS + GRAPH_OFFSET_Y  # Convert function output to screen y-coordinate
 
-        # Update robot's position
-        robot.rect.x = screen_x - robot.rect.width  # Robot stays to the left of the box
-        robot.rect.y = screen_y
+        # Calculate target position for the robot
+        target_x = screen_x - robot.rect.width
+        target_y = screen_y
 
-        all_sprites.update()  # Update all sprite positions
-        all_sprites.draw(screen)  # Draw all sprites on the screen
+        # Move the robot smoothly to this position
+        for robot_position in move_robot_to([target_x, target_y],
+                                            30):  # 30 is an example for frames, adjust for desired speed
+            # Clear the entire screen to remove the robot's previous position
+            screen.fill(BLACK)
 
-        # Wait a moment to simulate the robot "placing" the box
-        pygame.time.wait(500)
+            # Redraw all the stationary elements (like the already placed boxes)
+            for box_position in drawn_boxes_positions:
+                pygame.draw.rect(screen, BROWN, box_position)
 
-        # Draw the box
+            # Update and redraw the robot in its new position
+            robot.rect.x, robot.rect.y = robot_position
+            all_sprites.update()
+            all_sprites.draw(screen)
+
+            pygame.display.flip()
+            pygame.time.wait(10)  # you can adjust this wait time to make the robot move faster/slower
+
+        # Now, draw the box only once after the robot has reached its position
         pygame.draw.rect(screen, BROWN, (screen_x, screen_y, BOX_SIZE, BOX_SIZE))
+        drawn_boxes_positions.append((screen_x, screen_y, BOX_SIZE, BOX_SIZE))
         pygame.display.flip()  # Update the screen
 
 def draw_output_screen():

@@ -15,7 +15,6 @@ def draw_input_screen():
     screen.blit(title, title_rect)
 
     # Note: This is a simplistic input box, which will only display a prompt.
-    # In a full application, you'd likely want a more interactive text input box.
     input_box = pygame.Rect(SCREEN_WIDTH // 2 - 70, 250, 140, 50)
     pygame.draw.rect(screen, WHITE, input_box)
 
@@ -60,6 +59,7 @@ def k2_input_screen():
 
     k2_output_screen()
 
+
 def k2_output_screen():
     global boxes_drawn, robot_position
 
@@ -70,8 +70,10 @@ def k2_output_screen():
 
     boxes_drawn = 0
     box_group.empty()
-    robot.rect.x = SCREEN_WIDTH // 2 - ROBOT_WIDTH // 2 - BOX_WIDTH - 10
-    robot.rect.y = SCREEN_HEIGHT - ROBOT_HEIGHT
+    initial_robot_position = [SCREEN_WIDTH // 2 - ROBOT_WIDTH - BOX_WIDTH - 10, SCREEN_HEIGHT - ROBOT_HEIGHT]
+    robot_position = list(initial_robot_position)  # Make a copy to avoid modifying the original list
+
+    vertical_offset = 20  # Adjust this value to fine-tune the vertical alignment of the robot
 
     running = True
     while running:
@@ -86,22 +88,28 @@ def k2_output_screen():
                     pygame.event.clear(MOUSEBUTTONDOWN)
 
         if boxes_drawn < current_number:
-            new_box = Box(SCREEN_WIDTH // 2 - BOX_WIDTH // 2,
-                          SCREEN_HEIGHT - (boxes_drawn + 1) * (BOX_HEIGHT + SPACING) - ROBOT_HEIGHT)
+            new_box_y = SCREEN_HEIGHT - (boxes_drawn + 1) * (BOX_HEIGHT + SPACING) - ROBOT_HEIGHT + vertical_offset
+
+            # Determine the target position for the robot
+            target_position = [initial_robot_position[0], new_box_y]
+
+            # Move the robot to the target position
+            for new_position in move_robot_to(target_position, 30):
+                robot.rect.x, robot.rect.y = new_position
+                draw_output_screen()
+
+                pygame.draw.rect(screen, GRAY, return_button)
+                button_text = medium_font.render("Return to Menu", True, BLACK)
+                button_text_rect = button_text.get_rect(center=return_button.center)
+                screen.blit(button_text, button_text_rect)
+
+                pygame.display.flip()
+                pygame.time.wait(10)
+
+            new_box = Box(SCREEN_WIDTH // 2 - BOX_WIDTH // 2, new_box_y + ROBOT_HEIGHT - vertical_offset)
             box_group.add(new_box)
 
-            robot.rect.y -= (BOX_HEIGHT + SPACING)
             boxes_drawn += 1
-
-        draw_output_screen()  # This replaces the older screen.fill(BLACK)
-
-        pygame.draw.rect(screen, GRAY, return_button)
-        button_text = medium_font.render("Return to Menu", True, BLACK)
-        button_text_rect = button_text.get_rect(center=return_button.center)
-        screen.blit(button_text, button_text_rect)
-
-        pygame.display.flip()
-        clock.tick(2)
 
     while True:
         draw_output_screen()
@@ -123,3 +131,5 @@ def k2_output_screen():
                     return
 
         clock.tick(60)
+
+
