@@ -8,6 +8,9 @@ random_number = random.randint(1, 9)
 number_text = None
 number_rect = None
 
+boxh = 20
+boxw = 20
+
 # Initialize pygame
 pygame.init()
 
@@ -23,13 +26,13 @@ def pre_render_boxes(initial_count=10):
     box_group.empty()
     
     for count in range(initial_count):
-        current_x_position = initial_x_position + (boxes_drawn * (BOX_WIDTH + 10))
+        current_x_position = initial_x_position + (boxes_drawn * (10 + 10))
         
         for i in range(boxes_drawn + 1):  
             robot.state = "runRight"
 
             base_height = (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height()
-            new_box_y = base_height - (i + 1) * (BOX_HEIGHT + SPACING) + vertical_offset
+            new_box_y = base_height - (i + 1) * (10 + SPACING) + vertical_offset
 
             target_position = [current_x_position, new_box_y]
 
@@ -43,7 +46,7 @@ def pre_render_boxes(initial_count=10):
                 pygame.display.flip()
                 pygame.time.wait(10)
 
-            new_box = Box(current_x_position, new_box_y + ROBOT_HEIGHT - vertical_offset)
+            new_box = Box(current_x_position, new_box_y + ROBOT_HEIGHT - vertical_offset,10,10)
             box_group.add(new_box)
 
             # Play the sound when a box is placed
@@ -133,13 +136,7 @@ def k2_input_screen():
 
 
 def k2_output_screen():
-    """
-    Screen where robot moves and boxes are drawn based on the user input number.
-    """
-
     global boxes_drawn, robot_position, number_rect, number_text
-
-    
 
     button_width, button_height = 150, 40
     button_x = SCREEN_WIDTH - button_width - 10
@@ -151,8 +148,17 @@ def k2_output_screen():
 
     # Initial horizontal starting position for the robot
     initial_x_position = 100  
-
     vertical_offset = 20
+
+    # Variable to keep track of the current number of boxes to draw
+    current_stack_count = 1
+
+    if current_number >=5:
+        boxw = 5
+        boxh = 5
+    else:
+        boxw = 10
+        boxh = 10
 
     running = True
     while running:
@@ -165,14 +171,13 @@ def k2_output_screen():
                     running = False
                     pygame.event.clear(MOUSEBUTTONDOWN)
 
-        # Horizontal position for the new stack
-        current_x_position = initial_x_position + (boxes_drawn * (BOX_WIDTH + 10))
+        current_x_position = initial_x_position + (boxes_drawn * (boxw + 10))
 
-        for i in range(boxes_drawn + 1):  # +1 because we want at least one box in each stack
+        for i in range(current_stack_count):  
             robot.state = "runRight"
 
             base_height = (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height()
-            new_box_y = base_height - (i + 1) * (BOX_HEIGHT + SPACING) + vertical_offset
+            new_box_y = base_height - (i + 1) * (boxh + SPACING) + vertical_offset
 
             target_position = [current_x_position, new_box_y]
 
@@ -190,16 +195,16 @@ def k2_output_screen():
 
                 pygame.display.flip()
                 pygame.time.wait(10)
-
-            new_box = Box(current_x_position, new_box_y + ROBOT_HEIGHT - vertical_offset)
+            
+            new_box = Box(current_x_position, new_box_y + ROBOT_HEIGHT - vertical_offset, boxw, boxh)
             box_group.add(new_box)
 
-
-            # Play the sound when a box is placed
-            #place_sound.play()
-
         boxes_drawn += 1
-        if boxes_drawn >= current_number:
+
+        # Increment the current_stack_count by the current_number
+        current_stack_count += current_number  
+        
+        if boxes_drawn >= 10:  # Limit the number of stacks to 10
             running = False
 
     while True:

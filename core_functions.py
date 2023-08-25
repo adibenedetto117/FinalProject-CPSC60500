@@ -390,11 +390,11 @@ class Robot(base_sprite.BaseSprite):
 
 
 class Box(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, width, height):
         super().__init__()
 
         # Create a simple box rectangle
-        self.image = pygame.Surface([BOX_WIDTH, BOX_HEIGHT])
+        self.image = pygame.Surface([width, height])
         self.image.fill(BROWN)
 
         self.rect = self.image.get_rect()
