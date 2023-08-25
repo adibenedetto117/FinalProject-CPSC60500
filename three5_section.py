@@ -14,9 +14,12 @@ correct = "None"
 
 from math import pow 
 
+intro35 = pygame.mixer.Sound(f"assets/Narrator/35/35intro.wav")
+
 print("Loading section 3-5...")
 
 def Three5_input_screen():
+    intro35.play()
     global current_number, function_selected, correct, current_question, drawn_boxes_positions
     current_question = 0
     correct = "None"
