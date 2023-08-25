@@ -132,7 +132,7 @@ def k2_input_screen():
         if invalid == True:
             invalid_text = "Invalid input (1-9)"
             invalid_text = medium_font.render(invalid_text, True, BLACK)
-            invalid_rect = number_text.get_rect(center=(SCREEN_WIDTH // 2-100, 700))  # Place it at the bottom of the screen
+            invalid_rect = invalid_text.get_rect(center=(SCREEN_WIDTH // 2, 700))  # Place it at the bottom of the screen
             screen.blit(invalid_text, invalid_rect)
 
         # Then render it using Pygame's font rendering
