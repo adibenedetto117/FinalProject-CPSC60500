@@ -2,6 +2,9 @@ from core_functions import *
 import copy
 import main
 
+decRemind = pygame.mixer.Sound(f"assets/Narrator/68/decRemind.wav")
+stockIntro = pygame.mixer.Sound(f"assets/Narrator/68/stockIntro.wav")
+stockEnd = pygame.mixer.Sound(f"assets/Narrator/68/stockEnd.wav")
 print("Loading section 6-8...")
 
 
@@ -179,7 +182,7 @@ class GameState:
 
 
        screen.fill(BLACK)
-
+       stockEnd.play()
        # Get all companies' histories
        histories = [company.history for company in self.companies]
        colors = [company_colors[company.name] for company in self.companies]
@@ -292,6 +295,8 @@ def game_loop():
    clock = pygame.time.Clock()
    running = True
    buttons = []
+   if game_state.month_index == 0:
+       stockIntro.play()
 
    stocks_quantity = stocks_quant()
 
@@ -396,6 +401,10 @@ def game_loop():
                # Check for advancing to the next month
                if advance_button.is_over(pygame.mouse.get_pos()):
                    game_state.next_month()
+                   
+                   if game_state.month_index == len(game_state.months) - 1: #plays reminder to sell at the last month, December
+                       decRemind.play()
+                       
                    if game_state.month_index == len(game_state.months):  # Check if current month is December
                        action = game_state.display_summary()
                        if action == "MAIN_MENU":
