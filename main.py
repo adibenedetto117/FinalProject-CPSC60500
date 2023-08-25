@@ -5,12 +5,13 @@ from pygame.locals import *
 from core_functions import *
 from k2_section import *
 from three5_section import *
-from six8_section import *
 from main_menu import *
+import six8_section as six8
+
 
 
 def main():
-    global in_main_menu
+    global in_main_menu, stocks_quantity
     run = True
     in_main_menu = True
 
@@ -40,7 +41,7 @@ def main():
 
                 if Six8_btn.collidepoint(pygame.mouse.get_pos()):
                     in_main_menu = False
-                    game_loop()
+                    six8.game_loop()
                     in_main_menu = True
 
         pygame.display.flip()

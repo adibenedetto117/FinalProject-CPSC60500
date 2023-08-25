@@ -3,6 +3,7 @@ import assets
 import base_sprite
 import random
 from decimal import Decimal, ROUND_UP
+import csv
 
 print("Initializing core functionality...")
 
@@ -126,7 +127,7 @@ def move_robot_in_menu():
     # Initialize variables
     speed_horizontal = 2
     speed_vertical = 3  # This is the gravity effect
-    print(robot_position[1], (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height())
+
 
     if robot_position[1] != (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height() and robot_has_landed == True and teleporter_state == False:
         robot_position[1] = (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height()
@@ -561,13 +562,32 @@ no_event_streak = 0 # Sets the variable to 0 so that events can become more like
 current_month = 0
 yearly_events = []
 
-stocks_quantity = {
-    'Megacorp': 500,
-    'Farming Company': 500,
-    'Mining Company': 500,
-    'Research Company': 500
+def stocks_quant():
+
+    stocks_quanit = {
+        'Megacorp': 500,
+        'Farming Colony': 500,
+        'Mining Company': 500,
+        'Research Company': 500
+    }
+
+    return stocks_quanit
+
+stocks_quantity = stocks_quant()
+
+stocks_transaction_count = {
+    'Megacorp': 0,
+    'Farming Colony': 0,
+    'Mining Company': 0,
+    'Research Company': 0
 }
 
+company_colors = {
+    'Megacorp': WHITE,
+    'Farming Colony': GREEN,
+    'Mining Company': ORANGE,
+    'Research Company': BLUE
+}
 
 def generate_monthly_event():
     global current_month, yearly_events
@@ -616,6 +636,15 @@ def calculate_stock_changes(company, event_name):
     """
     Adjusts stock values based on the company and the event.
     """
+
+    # Initialize the transaction effect
+    transaction_effect = 0
+
+    # Calculate the effect of buying/selling on stock price
+    if abs(stocks_transaction_count[company['name']]) >= 10:
+        transaction_multiplier = stocks_transaction_count[company['name']] // 10
+        transaction_effect = 0.02 * transaction_multiplier
+
     if not event_name:  # If there's no event, a normal fluctuation occurs
         change = random.uniform(-7, 7) / 100
         return company['stock_value'] * (1 + change)
@@ -629,8 +658,26 @@ def calculate_stock_changes(company, event_name):
 
     if event['affected'] == 'all' or company['name'] in event['affected']:
         change = random.uniform(effect_range[0], effect_range[1]) / 100
-        return company['stock_value'] * (1 + change)
+        return company['stock_value'] * (1 + change + transaction_effect)
 
     # If the company is unaffected by the event, a normal fluctuation occurs
     change = random.uniform(-7, 7) / 100
-    return company['stock_value'] * (1 + change)
+    return company['stock_value'] * (1 + change + transaction_effect)
+def reset_stocks_transaction_count():
+    for company in stocks_transaction_count:
+        stocks_transaction_count[company] = 0
+
+def save_data_to_csv(game_state):
+    filename = "game_data.csv"  # or include a datetime stamp to make it unique
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        # Write header
+        writer.writerow(["Month", "Year", "Player Balance", "Megacorp Stock", "Farming Colony Stock", "Mining Company Stock",
+                         "Research Company Stock", "Events", "Net Income"])
+
+        # Assuming you store each month's data in some list
+        for month_data in game_state.month_data:
+            writer.writerow([month_data["Month"], month_data["Year"], month_data["Player Balance"], month_data["Megacorp Stock"],
+                             month_data["Farming Colony Stock"], month_data["Mining Company Stock"],
+                             month_data["Research Company Stock"],
+                             month_data["Events"], month_data["Net Income"]])
