@@ -65,7 +65,7 @@ def draw_input_screen():
     """
     draw_background()
 
-    title = large_font.render("Pick a number a number K (1-100)", True, WHITE)
+    title = large_font.render("Pick a number a number K (1-9)", True, WHITE)
     title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 100))  # Adjust the '100' to move vertically
     
 
@@ -92,7 +92,7 @@ def draw_output_screen():
 
 def k2_input_screen():
     """
-    Screen where user inputs a number between 1-100.
+    Screen where user inputs a number between 1-9.
     """
     global current_number, robot_position, number_text, number_rect
     pre_render_boxes(2)
@@ -102,6 +102,7 @@ def k2_input_screen():
     robot.state = "idle"
     robot_position[0] = 200
     robot_position[1] = 528
+    invalid = False
   
     while typing:
         for event in pygame.event.get():
@@ -116,14 +117,24 @@ def k2_input_screen():
                     number_str = number_str[:-1]
                 elif event.key == K_RETURN:
                     current_number = int(number_str)
-                    typing = False
-
+                    if current_number >= 1 and current_number <= 9:
+                        typing = False
+                        invalid = False
+                    else:
+                        print("Invalid input. Please try again.")
+                        invalid = True
+                        
         input_box = draw_input_screen()  # Draws the input screen and captures the input box
 
         all_sprites.update()
         all_sprites.draw(screen)
 
-        
+        if invalid == True:
+            invalid_text = "Invalid input (1-9)"
+            invalid_text = medium_font.render(invalid_text, True, BLACK)
+            invalid_rect = number_text.get_rect(center=(SCREEN_WIDTH // 2-100, 700))  # Place it at the bottom of the screen
+            screen.blit(invalid_text, invalid_rect)
+
         # Then render it using Pygame's font rendering
         number_text = medium_font.render(number_str, True, BLACK)
         number_rect = number_text.get_rect(center=(SCREEN_WIDTH // 2, 250 + 25))  # Place it at the bottom of the screen
