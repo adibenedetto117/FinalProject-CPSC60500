@@ -1,4 +1,6 @@
 import pygame
+import assets
+import base_sprite
 
 print("Initializing core functionality...")
 
@@ -107,6 +109,179 @@ if __name__ == "__main__":
     main()
 """
 
+def move_robot_in_menu():
+    """
+    Moves the robot on the screen in the main menu based on certain conditions and states.
+    Updates the robot's position, animation frames, and triggers the teleporter and blue explosion animations.
+    """
+    global robot_position 
+    global moving_right 
+    global robot_has_landed  # To keep track of whether the robot has landed on the floor
+    global teleporter_state  # To keep track of whether the teleporter has been triggered
+    global current_frame_blue, counter_blue, animation_speed_blue, blue_explosion_frames, blue_explosion_triggered
+
+
+    # Initialize variables
+    speed_horizontal = 2
+    speed_vertical = 3  # This is the gravity effect
+    print(robot_position[1], (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height())
+
+    if robot_position[1] != (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height() and robot_has_landed == True and teleporter_state == False:
+        robot_position[1] = (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height()
+        robot_has_landed = True
+    
+    # Boundary values
+    left_bound = 50
+    right_bound = SCREEN_WIDTH - 50 - ROBOT_WIDTH 
+    floor_height = (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height()
+    # If the robot has not landed yet, make it fall down
+    if robot_has_landed == False:
+        if robot.state != "fall":
+            blue_explosion_triggered = True
+            robot.state = "fall"
+        robot_position[1] += speed_vertical
+
+        if blue_explosion_triggered:
+            counter_blue += 1
+            if counter_blue >= animation_speed_blue:
+                counter_blue = 0
+                current_frame_blue += 1
+                if current_frame_blue >= len(blue_explosion_frames):
+                    current_frame_blue = 0
+                    blue_explosion_triggered = False
+
+            screen.blit(blue_explosion_frames[current_frame_blue], robot_position)
+        
+        if robot_position[1] >= floor_height:
+            robot_position[1] = floor_height
+            robot_has_landed = True
+    else:  # If the robot has landed, make it move left and right
+        
+        if moving_right:
+            if robot.state != "runRight":
+                robot.state = "runRight"
+            robot_position[0] += speed_horizontal
+            if robot_position[0] >= right_bound:
+                moving_right = False
+        elif moving_right == False and robot_position[0] != 390:
+            if robot.state!= "runLeft":
+                robot.state = "runLeft"
+            robot_position[0] -= speed_horizontal
+            if robot_position[0] <= left_bound:
+                moving_right = True
+        elif robot_position[0] == 390 and teleporter_state == False and robot.state != "jump":
+            robot.state = "idle"
+            teleporter_state = True
+        elif teleporter_state == True:
+            if robot.state!= "jump":
+                robot.state = "jump"
+            robot_position[1] -= speed_vertical-2.5
+        else:
+            robot_position[1] = 100
+            robot_position[0] = 200
+            robot_has_landed = False
+    # Update robot sprite's position
+    robot.rect.x, robot.rect.y = robot_position
+
+
+
+
+def draw_background(in_main_menu= False):
+    """
+    Draws the background elements including the floors, desks, and animation objects.
+    
+    Args:
+    in_main_menu (bool): A flag indicating whether this function is being called in the main menu or not.
+    
+    Note:
+    Uses global variables for the screen, animation states, counters, etc.
+    """
+
+    global teleporter_state, current_frame_teleporter , animation_speed_teleporter,counter_teleporter, teleporter_frames,current_frame_rotating, counter_rotating, animation_speed_rotaing, rotatingOBJ_frames
+
+    ###########  Top floor tiles ########### 
+    top_floor_tile = top_floor_tiles
+    # Calculate the width of the tile
+    top_tile_width = top_floor_tile.get_width()
+    # Calculate the number of tiles required
+    num_tiles = SCREEN_WIDTH // top_tile_width
+    # Ensure you cover the entire width, even if there's a remainder
+    if SCREEN_WIDTH % top_tile_width != 0:
+        num_tiles += 1
+
+    ###########  Bottom Floor Tiles ########### 
+    bottom_floor_tile = bottom_floor_tiles
+    # Calculate the width of the tile
+    bottom_tile_width = bottom_floor_tile.get_width()
+
+    ########### BACKGROUND ITEMS ########### 
+
+    scaling_factor = (top_floor_tile.get_height() / desks.get_height())*3.5
+    
+    # Scale the desk and stand based on the scaling factor
+    desk_width = int(desks.get_width() * scaling_factor)
+    desk_height = int(desks.get_height() * scaling_factor)
+    desk = pygame.transform.scale(desks, (desk_width, desk_height))
+
+    stand_width = int(stands.get_width() * scaling_factor)
+    stand_height = int(stands.get_height() * scaling_factor)
+    stand = pygame.transform.scale(stands, (stand_width, stand_height))
+
+
+    # Calculate the position for desk and stand based on screen dimensions
+    desk_x = SCREEN_WIDTH * 0.1
+    desk_y = (SCREEN_HEIGHT - 205) - top_floor_tile.get_height()  # Resting on the top floor tile
+
+    stand_x = SCREEN_WIDTH * 0.9 - stand.get_width()
+    stand_y = (SCREEN_HEIGHT - 205) - top_floor_tile.get_height() # Resting on the top floor tile
+
+
+    ########### Background Image ########### 
+    background_image = pygame.transform.scale(background_images, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    screen.blit(background_image, (0, 0))
+
+    # Draw the tiles
+    for i in range(num_tiles):
+        screen.blit(top_floor_tile, (i * top_tile_width, (SCREEN_HEIGHT - 96) - top_floor_tile.get_height()))
+        screen.blit(bottom_floor_tile, (i * bottom_tile_width, (SCREEN_HEIGHT - 64) - bottom_floor_tile.get_height()))
+        screen.blit(bottom_floor_tile, (i * bottom_tile_width, (SCREEN_HEIGHT - 32) - bottom_floor_tile.get_height()))
+        screen.blit(bottom_floor_tile, (i * bottom_tile_width, (SCREEN_HEIGHT ) - bottom_floor_tile.get_height()))
+    
+    if in_main_menu == True:
+        move_robot_in_menu()
+
+        screen.blit(desk, (desk_x, desk_y))
+        screen.blit(stand, (stand_x, stand_y))
+
+        rotatingOBJ_frames = assets.resize_animation(rotatingOBJ_frames, desk.get_width() - (desk.get_width() *.5), desk.get_height() - (desk.get_height() *.5))
+
+        counter_rotating += 1
+        if counter_rotating >= animation_speed_rotaing:
+            counter_rotating = 0
+            current_frame_rotating += 1
+            if current_frame_rotating >= len(rotatingOBJ_frames):
+                current_frame_rotating = 0
+        # Draw the current frame of the animation
+        screen.blit(rotatingOBJ_frames[current_frame_rotating], (stand_x+(desk_width//4),stand_y+(desk_height//4)))   
+        
+        teleporter_frames = assets.resize_animation(teleporter_frames, desk.get_width() - (desk.get_width() *.5), desk.get_height() - (desk.get_height() *.5))
+
+        if teleporter_state == True:
+            counter_teleporter += 1
+            if counter_teleporter >= animation_speed_teleporter:
+                counter_teleporter = 0
+                current_frame_teleporter += 1
+                if current_frame_teleporter >= len(teleporter_frames):
+                    current_frame_teleporter = 0
+                    teleporter_state = False
+            screen.blit(teleporter_frames[current_frame_teleporter], (SCREEN_WIDTH * 0.55,(SCREEN_HEIGHT - 155) - top_floor_tile.get_height() ))
+        else:
+            screen.blit(teleporter_frames[0], (SCREEN_WIDTH * 0.55,(SCREEN_HEIGHT - 155) - top_floor_tile.get_height() ))
+        all_sprites.update()
+        all_sprites.draw(screen)
+
+
 # Initialize pygame
 pygame.init()
 
@@ -118,6 +293,41 @@ SCREEN_HEIGHT = 720
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Exponentials Final Project")
 clock = pygame.time.Clock()
+
+# Load Assets for Screen
+top_floor_tiles, bottom_floor_tiles,desks,stands,background_images = assets.background_assets()
+rotatingOBJ_frames, teleporter_frames = assets.background_animation_assets()
+robot_flying_frame, blue_explosion_frames, robot_idle_frames,robot_runRight_frames,robot_runLeft_frames, robot_jump_frames,robot_fall_frame,robot_land_frame = assets.robot_animation_assets()
+
+# Counters
+
+    # Rotating Backgroud Frames
+current_frame_rotating = 0
+animation_speed_rotaing = 8  # how many game loop iterations before moving to next frame
+counter_rotating = 0
+
+    # Rotating Backgroud Frames
+current_frame_teleporter = 0
+animation_speed_teleporter = 14  # how many game loop iterations before moving to next frame
+counter_teleporter = 0
+
+        # BLUE EXPLOSION
+current_frame_blue = 0
+animation_speed_blue = 10
+counter_blue = 0
+blue_explosion_triggered = False  
+
+    # Robot Main Menu Counters
+robot_position = [SCREEN_WIDTH // 2, 0]  # Start at the top-middle of the screen
+moving_right = True  # Initial direction
+robot_has_landed = False  # Initially, the robot is in the air
+
+# Teleporter On
+teleporter_state = False
+
+#Sounds 
+place_sound = pygame.mixer.Sound('assets/boop.mp3')
+
 
 # Fonts
 large_font = pygame.font.SysFont('Arial', 36, bold=True)
@@ -133,8 +343,8 @@ BROWN = (139, 69, 19)
 MAX_BOXES = 1000
 BOX_WIDTH = 10
 BOX_HEIGHT = 10
-ROBOT_WIDTH = 20
-ROBOT_HEIGHT = 20
+ROBOT_WIDTH = 64
+ROBOT_HEIGHT = 64
 SPACING = 5  # space between boxes
 robot_position = [SCREEN_WIDTH // 2 - BOX_WIDTH // 2, SCREEN_HEIGHT - BOX_HEIGHT * 2]
 drawn_boxes_positions = []
@@ -147,22 +357,28 @@ boxes_drawn = 0
 current_number = 0
 function_selected = None
 
-class Robot(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
+class Robot(base_sprite.BaseSprite):
+    def __init__(self, sprite_idle_frames, sprite_runRight_frames, sprite_runLeft_frames, sprite_jump_frames, sprite_fall_frame, sprite_land_frame, robot_flying_frame):
+        super().__init__(sprite_idle_frames, sprite_runRight_frames, sprite_runLeft_frames, sprite_jump_frames, sprite_fall_frame, sprite_land_frame, robot_flying_frame)
+        self.state = "idle"
+        self.image = pygame.Surface([ROBOT_WIDTH, ROBOT_HEIGHT])  
+        self.image.fill((255, 255, 255))  
 
-        # Create a simple robot rectangle for representation
-        self.image = pygame.Surface([ROBOT_WIDTH, ROBOT_HEIGHT])
-        self.image.fill(WHITE)
-
+        # Initialize rect attribute
         self.rect = self.image.get_rect()
-        self.rect.x = SCREEN_WIDTH // 2 - ROBOT_WIDTH // 2 - BOX_WIDTH - 10  # 10 pixels offset from box
-        self.rect.y = SCREEN_HEIGHT - ROBOT_HEIGHT
 
     def update(self):
-        # For simplicity, if the robot's position updates, reflect it in its rect position
-        self.rect.x = robot_position[0]
-        self.rect.y = robot_position[1]
+            self.update_animation()
+            self.rect.x, self.rect.y = robot_position  
+            current_animation = getattr(self, self.state)
+            if isinstance(current_animation, list):
+                self.image = current_animation[self.current_frame]
+            else:
+                self.image = current_animation
+    def render(self, screen):
+        super().render(screen)
+
+        
 
 
 class Box(pygame.sprite.Sprite):
@@ -177,7 +393,9 @@ class Box(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-robot = Robot()
+robot = Robot(robot_idle_frames, robot_runRight_frames, robot_runLeft_frames, robot_jump_frames, robot_fall_frame, robot_land_frame, robot_flying_frame)
+robot_position[1] = 100
+robot_position[0] = 200
 all_sprites.add(robot)
 
 def move_robot_to(target_position, frames):
@@ -189,6 +407,9 @@ def move_robot_to(target_position, frames):
     :yield: New [x, y] position for each frame.
     """
     global robot_position
+    
+    if robot_position[1] < (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height():
+        robot.state = "flying"
 
     # Determine the movement needed in each frame
     dx = (target_position[0] - robot_position[0]) / frames
@@ -202,6 +423,7 @@ def move_robot_to(target_position, frames):
 
     # Ensure the final position is exactly the target, to avoid any floating point inaccuracies.
     robot_position = target_position
+    
     yield robot_position
 
 
@@ -234,7 +456,7 @@ def draw_function_curve_and_boxes(function_selected, current_number):
         for robot_position in move_robot_to([target_x, target_y],
                                             30):  # 30 is an example for frames, adjust for desired speed
             # Clear the entire screen to remove the robot's previous position
-            screen.fill(BLACK)
+            draw_background()
 
             # Redraw all the stationary elements (like the already placed boxes)
             for box_position in drawn_boxes_positions:
@@ -254,7 +476,7 @@ def draw_function_curve_and_boxes(function_selected, current_number):
         pygame.display.flip()  # Update the screen
 
 def draw_output_screen():
-    screen.fill(BLACK)
+    draw_background()
 
     # Draw all sprites
     all_sprites.draw(screen)

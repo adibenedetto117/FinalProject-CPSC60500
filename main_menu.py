@@ -3,8 +3,9 @@ from core_functions import *
 
 print("Displaying main menu...")
 
-def draw_main_menu():
-    screen.fill(BLACK)
+def draw_main_menu(in_main_menu):
+
+    draw_background(in_main_menu)
 
     title = large_font.render("Choose your grade level", True, WHITE)
     title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 100))

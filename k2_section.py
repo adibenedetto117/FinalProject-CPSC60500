@@ -2,16 +2,70 @@ import pygame
 from core_functions import *
 from pygame.locals import *
 
+import random
+
+random_number = random.randint(1, 9)
+number_text = None
+number_rect = None
+
 # Initialize pygame
 pygame.init()
 
 print("Loading section k-2...")
 
-def draw_input_screen():
-    screen.fill(BLACK)
+def pre_render_boxes(initial_count=10):
+    global boxes_drawn, robot_position
+    
+    initial_x_position = 100  
+    vertical_offset = 20
+    
+    boxes_drawn = 0
+    box_group.empty()
+    
+    for count in range(initial_count):
+        current_x_position = initial_x_position + (boxes_drawn * (BOX_WIDTH + 10))
+        
+        for i in range(boxes_drawn + 1):  
+            robot.state = "runRight"
 
-    title = large_font.render("Pick a number 1-100", True, WHITE)
-    title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 100))
+            base_height = (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height()
+            new_box_y = base_height - (i + 1) * (BOX_HEIGHT + SPACING) + vertical_offset
+
+            target_position = [current_x_position, new_box_y]
+
+            for new_position in move_robot_to(target_position, 40):
+                robot.rect.x, robot.rect.y = new_position
+                draw_output_screen()
+
+                all_sprites.update()
+                all_sprites.draw(screen)
+
+                pygame.display.flip()
+                pygame.time.wait(10)
+
+            new_box = Box(current_x_position, new_box_y + ROBOT_HEIGHT - vertical_offset)
+            box_group.add(new_box)
+
+            # Play the sound when a box is placed
+            #place_sound.play()
+        
+        boxes_drawn += 1
+
+
+
+def draw_input_screen():
+    """
+    Draw the background and input box on the screen.
+
+    Returns:
+        pygame.Rect: The rectangle object representing the input box.
+    """
+    draw_background()
+
+    title = large_font.render("Pick a number a number K (1-100)", True, WHITE)
+    title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 100))  # Adjust the '100' to move vertically
+    
+
     screen.blit(title, title_rect)
 
     # Note: This is a simplistic input box, which will only display a prompt.
@@ -21,18 +75,31 @@ def draw_input_screen():
     return input_box  # Return the input box rect for interaction purposes
 
 def draw_output_screen():
-    screen.fill(BLACK)
+    """
+    Draw the background, sprites, and boxes on the screen.
+    """
+
+    draw_background()
 
     # Draw all sprites
     all_sprites.draw(screen)
     box_group.draw(screen)
 
 
+
 def k2_input_screen():
-    global current_number
+    """
+    Screen where user inputs a number between 1-100.
+    """
+    global current_number, robot_position, number_text, number_rect
+    pre_render_boxes(2)
     typing = True
     number_str = ""
 
+    robot.state = "idle"
+    robot_position[0] = 200
+    robot_position[1] = 528
+  
     while typing:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -50,8 +117,13 @@ def k2_input_screen():
 
         input_box = draw_input_screen()  # Draws the input screen and captures the input box
 
+        all_sprites.update()
+        all_sprites.draw(screen)
+
+        
+        # Then render it using Pygame's font rendering
         number_text = medium_font.render(number_str, True, BLACK)
-        number_rect = number_text.get_rect(center=(SCREEN_WIDTH // 2, 250 + 25))
+        number_rect = number_text.get_rect(center=(SCREEN_WIDTH // 2, 250 + 25))  # Place it at the bottom of the screen
         screen.blit(number_text, number_rect)
 
         pygame.display.flip()
@@ -61,19 +133,26 @@ def k2_input_screen():
 
 
 def k2_output_screen():
-    global boxes_drawn, robot_position
+    """
+    Screen where robot moves and boxes are drawn based on the user input number.
+    """
+
+    global boxes_drawn, robot_position, number_rect, number_text
+
+    
 
     button_width, button_height = 150, 40
     button_x = SCREEN_WIDTH - button_width - 10
     button_y = 10
     return_button = pygame.Rect(button_x, button_y, button_width, button_height)
 
-    boxes_drawn = 0
-    box_group.empty()
-    initial_robot_position = [SCREEN_WIDTH // 2 - ROBOT_WIDTH - BOX_WIDTH - 10, SCREEN_HEIGHT - ROBOT_HEIGHT]
-    robot_position = list(initial_robot_position)  # Make a copy to avoid modifying the original list
+    boxes_drawn = 0  # Resetting box count
+    box_group.empty()  # Emptying any existing boxes
 
-    vertical_offset = 20  # Adjust this value to fine-tune the vertical alignment of the robot
+    # Initial horizontal starting position for the robot
+    initial_x_position = 100  
+
+    vertical_offset = 20
 
     running = True
     while running:
@@ -81,22 +160,28 @@ def k2_output_screen():
             if event.type == QUIT:
                 pygame.quit()
                 return
-
             if event.type == MOUSEBUTTONDOWN:
                 if return_button.collidepoint(event.pos):
                     running = False
                     pygame.event.clear(MOUSEBUTTONDOWN)
 
-        if boxes_drawn < current_number:
-            new_box_y = SCREEN_HEIGHT - (boxes_drawn + 1) * (BOX_HEIGHT + SPACING) - ROBOT_HEIGHT + vertical_offset
+        # Horizontal position for the new stack
+        current_x_position = initial_x_position + (boxes_drawn * (BOX_WIDTH + 10))
 
-            # Determine the target position for the robot
-            target_position = [initial_robot_position[0], new_box_y]
+        for i in range(boxes_drawn + 1):  # +1 because we want at least one box in each stack
+            robot.state = "runRight"
 
-            # Move the robot to the target position
-            for new_position in move_robot_to(target_position, 30):
+            base_height = (SCREEN_HEIGHT - 160) - top_floor_tiles.get_height()
+            new_box_y = base_height - (i + 1) * (BOX_HEIGHT + SPACING) + vertical_offset
+
+            target_position = [current_x_position, new_box_y]
+
+            for new_position in move_robot_to(target_position, 100):
                 robot.rect.x, robot.rect.y = new_position
                 draw_output_screen()
+
+                all_sprites.update()
+                all_sprites.draw(screen)
 
                 pygame.draw.rect(screen, GRAY, return_button)
                 button_text = medium_font.render("Return to Menu", True, BLACK)
@@ -106,10 +191,16 @@ def k2_output_screen():
                 pygame.display.flip()
                 pygame.time.wait(10)
 
-            new_box = Box(SCREEN_WIDTH // 2 - BOX_WIDTH // 2, new_box_y + ROBOT_HEIGHT - vertical_offset)
+            new_box = Box(current_x_position, new_box_y + ROBOT_HEIGHT - vertical_offset)
             box_group.add(new_box)
 
-            boxes_drawn += 1
+
+            # Play the sound when a box is placed
+            #place_sound.play()
+
+        boxes_drawn += 1
+        if boxes_drawn >= current_number:
+            running = False
 
     while True:
         draw_output_screen()

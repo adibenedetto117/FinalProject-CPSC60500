@@ -5,8 +5,9 @@ from pygame.locals import *
 from core_functions import *
 from k2_section import *
 from three5_section import *
-from six8_section import *
+#from six8_section import *
 from main_menu import *
+
 
 def main():
     global in_main_menu
@@ -14,10 +15,10 @@ def main():
     in_main_menu = True
 
     while run:
-        screen.fill(BLACK)
+
 
         if in_main_menu:
-            k2_btn, Three5_btn, Six8_btn = draw_main_menu()
+            k2_btn, Three5_btn, Six8_btn = draw_main_menu(in_main_menu)
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -26,7 +27,9 @@ def main():
             if event.type == MOUSEBUTTONDOWN and in_main_menu:
                 if k2_btn.collidepoint(pygame.mouse.get_pos()):
                     in_main_menu = False
+                    
                     k2_input_screen()
+                    
                     in_main_menu = True  # Reset after returning from k2_input_screen()
 
                 if Three5_btn.collidepoint(pygame.mouse.get_pos()):

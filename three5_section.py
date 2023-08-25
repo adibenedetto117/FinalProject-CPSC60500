@@ -48,7 +48,7 @@ def Three5_input_screen():
                         Three5_output_screen()  # This will transition to the output screen
                         return function_selected, current_number  # Return the selected function and number
 
-        screen.fill(BLACK)
+        draw_background()
 
         title = large_font.render("Pick a function", True, WHITE)
         title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 100))
@@ -94,7 +94,7 @@ def Three5_output_screen():
 
     # This implementation assumes you've already defined plotting mechanisms for these functions.
     # Place boxes based on function and input number
-    screen.fill(BLACK)
+    draw_background()
 
     print("About to draw_function_curve_and_boxes.")  # Debugging print statement
     # Draw the function curve and boxes
@@ -117,13 +117,13 @@ def Three5_output_screen():
                 if btn_return.collidepoint(event.pos):  # if the return button was clicked
                     return  # exit the function and return to the main menu
                 elif btn_clear.collidepoint(event.pos):
-                    screen.fill(BLACK)  # This clears the screen
+                    draw_background  # This clears the screen
                     drawn_boxes_positions.clear()  # This clears the boxes' positions
                     # Any other clearing functionality goes here (e.g. resetting lists, counters, etc.)
                 if event.type == MOUSEBUTTONDOWN:
                     if btn_input.collidepoint(event.pos):
                         Three5_input_screen()
-                        screen.fill(BLACK)
+                        draw_background
 
         # Remaining code to draw the screen elements...
         # Draw a "Main Menu" button
