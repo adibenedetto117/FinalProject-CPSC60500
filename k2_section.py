@@ -11,13 +11,19 @@ number_rect = None
 boxh = 20
 boxw = 20
 
+k2intro = pygame.mixer.Sound(f"assets/Narrator/k2/k2intro.wav")
+k2output = pygame.mixer.Sound(f"assets/Narrator/k2/k2output.wav")
+
 # Initialize pygame
 pygame.init()
 
 print("Loading section k-2...")
 
+
 def pre_render_boxes(initial_count=10):
     global boxes_drawn, robot_position
+    
+    k2intro.play()
     
     initial_x_position = 100  
     vertical_offset = 20
@@ -39,7 +45,7 @@ def pre_render_boxes(initial_count=10):
             for new_position in move_robot_to(target_position, 40):
                 robot.rect.x, robot.rect.y = new_position
                 draw_output_screen()
-
+                #k2output.play()
                 all_sprites.update()
                 all_sprites.draw(screen)
 
@@ -51,6 +57,7 @@ def pre_render_boxes(initial_count=10):
 
             # Play the sound when a box is placed
             #place_sound.play()
+                
         
         boxes_drawn += 1
 
@@ -70,7 +77,8 @@ def draw_input_screen():
     
 
     screen.blit(title, title_rect)
-
+    
+    
     # Note: This is a simplistic input box, which will only display a prompt.
     input_box = pygame.Rect(SCREEN_WIDTH // 2 - 70, 250, 140, 50)
     pygame.draw.rect(screen, WHITE, input_box)
@@ -95,7 +103,7 @@ def k2_input_screen():
     Screen where user inputs a number between 1-9.
     """
     global current_number, robot_position, number_text, number_rect
-    pre_render_boxes(2)
+    pre_render_boxes(10)
     typing = True
     number_str = ""
 
@@ -103,7 +111,7 @@ def k2_input_screen():
     robot_position[0] = 200
     robot_position[1] = 528
     invalid = False
-  
+    
     while typing:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -111,7 +119,7 @@ def k2_input_screen():
                 return
 
             if event.type == KEYDOWN:
-                if event.unicode.isdigit() and len(number_str) < 3:  # ensure max 3 digits
+                if event.unicode.isdigit() and len(number_str) < 1:  # ensure max 1 digit
                     number_str += event.unicode
                 elif event.key == K_BACKSPACE:
                     number_str = number_str[:-1]
@@ -120,12 +128,14 @@ def k2_input_screen():
                     if current_number >= 1 and current_number <= 9:
                         typing = False
                         invalid = False
+                        k2output.play()
                     else:
                         print("Invalid input. Please try again.")
                         invalid = True
                         
         input_box = draw_input_screen()  # Draws the input screen and captures the input box
-
+        
+        
         all_sprites.update()
         all_sprites.draw(screen)
 
@@ -195,6 +205,7 @@ def k2_output_screen():
             for new_position in move_robot_to(target_position, 100):
                 robot.rect.x, robot.rect.y = new_position
                 draw_output_screen()
+                
 
                 all_sprites.update()
                 all_sprites.draw(screen)
