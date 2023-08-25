@@ -362,6 +362,3 @@ def game_loop():
 if __name__ == '__main__':
    game_state = initial_game_state  # Set the current game state to the initial state
    game_loop()
-
-
-
