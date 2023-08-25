@@ -334,6 +334,7 @@ place_sound = pygame.mixer.Sound('assets/boop.mp3')
 # Fonts
 large_font = pygame.font.SysFont('Arial', 36, bold=True)
 medium_font = pygame.font.SysFont('Arial', 24)
+small_font = pygame.font.SysFont('Arial', 17)
 
 # Colors
 BLACK = (0, 0, 0)
@@ -434,8 +435,8 @@ def move_robot_to(target_position, frames):
     
     yield robot_position
 
-
-def draw_function_curve_and_boxes(function_selected, current_number):
+counter_curve_boxes = 0
+def draw_function_curve_and_boxes(function_selected, color, x_pos,current_number):
     # Define some constants for the graph, like space between points, size of boxes, etc.
     BOX_SIZE = 10
     SPACE_BETWEEN_POINTS = 1  # Adjust as per your graph size and screen width
@@ -457,7 +458,7 @@ def draw_function_curve_and_boxes(function_selected, current_number):
         screen_y = SCREEN_HEIGHT - y * SPACE_BETWEEN_POINTS + GRAPH_OFFSET_Y  # Convert function output to screen y-coordinate
 
         # Calculate target position for the robot
-        target_x = screen_x - robot.rect.width
+        target_x = screen_x - robot.rect.width + x_pos
         target_y = screen_y
 
         # Move the robot smoothly to this position
@@ -468,7 +469,7 @@ def draw_function_curve_and_boxes(function_selected, current_number):
 
             # Redraw all the stationary elements (like the already placed boxes)
             for box_position in drawn_boxes_positions:
-                pygame.draw.rect(screen, BROWN, box_position)
+                pygame.draw.rect(screen, color, box_position)
 
             # Update and redraw the robot in its new position
             robot.rect.x, robot.rect.y = robot_position
@@ -477,10 +478,10 @@ def draw_function_curve_and_boxes(function_selected, current_number):
 
             pygame.display.flip()
             pygame.time.wait(10)  # you can adjust this wait time to make the robot move faster/slower
-
+       
         # Now, draw the box only once after the robot has reached its position
-        pygame.draw.rect(screen, BROWN, (screen_x, screen_y, BOX_SIZE, BOX_SIZE))
-        drawn_boxes_positions.append((screen_x, screen_y, BOX_SIZE, BOX_SIZE))
+        pygame.draw.rect(screen, color, (screen_x+x_pos, screen_y, BOX_SIZE, BOX_SIZE))
+        drawn_boxes_positions.append((screen_x+x_pos, screen_y, BOX_SIZE, BOX_SIZE))
         pygame.display.flip()  # Update the screen
 
 def draw_output_screen():

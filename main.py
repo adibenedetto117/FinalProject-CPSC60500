@@ -22,6 +22,7 @@ def main():
 
         for event in pygame.event.get():
             if event.type == QUIT:
+
                 run = False
 
             if event.type == MOUSEBUTTONDOWN and in_main_menu:
