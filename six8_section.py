@@ -401,9 +401,6 @@ def game_loop():
                # Check for advancing to the next month
                if advance_button.is_over(pygame.mouse.get_pos()):
                    game_state.next_month()
-                   
-                   if game_state.month_index == len(game_state.months) - 1: #plays reminder to sell at the last month, December
-                       decRemind.play()
                        
                    if game_state.month_index == len(game_state.months):  # Check if current month is December
                        action = game_state.display_summary()

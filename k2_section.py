@@ -72,7 +72,7 @@ def draw_input_screen():
     """
     draw_background()
 
-    title = large_font.render("How many blocks tall should each step be (1-9)", True, WHITE)
+    title = large_font.render("Choose step height", True, WHITE)
     title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 100))  # Adjust the '100' to move vertically
     
 
